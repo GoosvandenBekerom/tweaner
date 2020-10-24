@@ -16,6 +16,8 @@ The most overkill way to delete the history of a twitter account ™
 ## Usage
 
 ```
+$ git clone https://github.com/GoosvandenBekerom/tweaner.git
+$ cd tweaner
 $ go install
 $ tweaner
 ```
