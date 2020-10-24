@@ -13,17 +13,46 @@ ___________
 The most overkill way to delete the history of a twitter account ™
 ```
 
-## Usage
+## Installing
+
+Make sure you have the following binaries installed:
+
+- `git` - let's be honest, what are you doing here if you dont have git installed..
+- `go` - https://golang.org/
 
 ```
 $ git clone https://github.com/GoosvandenBekerom/tweaner.git
 $ cd tweaner
 $ go install
+```
+
+## Usage
+
+```
 $ export TWEANER_CONSUMER_KEY=<your-twitter-consumer-key>
 $ export TWEANER_CONSUMER_SECRET=<your-twitter-consumer-secret>
 $ export TWEANER_ACCESS_TOKEN=<your-twitter-app-access-token>
 $ export TWEANER_ACCESS_TOKEN_SECRET=<your-twitter-app-access-token-secret>
+
+# run default (no backup support)
 $ tweaner
+
+# run tweaner for just 5 tweets
+$ tweaner -n 5
+
+# run tweaner in dryrun mode (no backups/deletions)
+$ tweaner -d
+
+# run with backup support
+$ tweaner -b -p "/put/backup/path/here"
+
+Usage of tweaner:
+  -b    enables backup support, when enabled, tweaner creates a backup of the deleted tweets at the path specified with -p
+  -d    dryrun, get tweets without deleting them
+  -n int
+        max amount of tweets to delete (default 1000)
+  -p string
+        root path for the backup files, required when backups are enabled with -b
 ```
 
 ## Development
@@ -48,8 +77,10 @@ $ source .env && go run main.go
 I wanted to start using my twitter more professionally, as in following people in the industry,
 maybe occasionally tweeting some tech related stuff etc.
 
-I extensively used my twitter during puberty, and I had like 25k tweets that are funny to read back,
-but are in no way, shape or form what I want as the history of my "professional" twitter account, right.
+I extensively used my twitter during high school/college (i.e. puberty), and I had like 25k tweets that are funny to read back,
+but are in no way, shape or form what I want as the history of my "professional" twitter account.
 
 Ofcourse there is no fun in manually cleaning up 25k tweets,
 and since I'm in the process of learning Go at the time of writing this I figured, let's automate this.
+
+And while I'm at it, why not open source it 🤷‍♂️.

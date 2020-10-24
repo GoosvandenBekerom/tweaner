@@ -1,13 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"log"
-	"net/url"
 	"os"
-	"strings"
-	"unicode/utf8"
 
+	"github.com/GoosvandenBekerom/tweaner/backup"
 	"github.com/GoosvandenBekerom/tweaner/twitter"
 )
 
@@ -20,39 +18,52 @@ ___________
                        \/     \/     \/     \/       
 The most overkill way to delete the history of a twitter account ™
 `
-const separator = `
-===================================================================
-`
+
+var (
+	n             int
+	dryrun        bool
+	backupEnabled bool
+	backupPath    string
+)
 
 func main() {
 	fmt.Print(banner)
-	fmt.Print(separator)
 
-	consumerKey := os.Getenv("TWEANER_CONSUMER_KEY")
-	consumerSecret := os.Getenv("TWEANER_CONSUMER_SECRET")
-	accessToken := os.Getenv("TWEANER_ACCESS_TOKEN")
-	accessTokenSecret := os.Getenv("TWEANER_ACCESS_TOKEN_SECRET")
+	flag.IntVar(&n, "n", 200, "max amount of tweets to delete")
+	flag.BoolVar(&dryrun, "d", false, "dryrun, get tweets without deleting them")
+	flag.BoolVar(&backupEnabled, "b", false, "enables backup support, when enabled, tweaner creates a backup of the deleted tweets at the path specified with -p")
+	flag.StringVar(&backupPath, "p", "", "root path for the backup files, required when backups are enabled with -b")
+	flag.Parse()
 
-	// print length of secrets for debugging purposes
-	fmt.Printf("consumer key: %s\n", mask(consumerKey))
-	fmt.Printf("consumer secret: %s\n", mask(consumerSecret))
-	fmt.Printf("access token: %s\n", mask(accessToken))
-	fmt.Printf("access token secret: %s\n", mask(accessTokenSecret))
-	fmt.Print(separator)
+	if backupEnabled && backupPath == "" {
+		fmt.Printf("\nincorrect usage: enabling backups requires a path to be set for the backup (set path with -p)\n\n")
+		flag.Usage()
+		os.Exit(1)
+	}
 
-	client := twitter.NewClient(consumerKey, consumerSecret, accessToken, accessTokenSecret)
-	tweets, err := client.GetUserTimeline(url.Values{
-		"count": []string{"10"},
-	})
+	secrets := twitter.InitSecrets()
+	client := twitter.NewClient(secrets)
+	tweets, err := client.GetTweets(n)
 	if err != nil {
-		log.Fatalf("unable to get tweets from user timeline: %v", err)
+		panic(fmt.Sprintf("unable to get tweets from authenticated user's timeline: %v", err))
 	}
 
 	for _, tweet := range tweets {
-		fmt.Println(tweet.Text)
+		if dryrun {
+			fmt.Printf("[dryrun] got tweet with id: %d and content: %s\n", tweet.Id, tweet.Text)
+			continue
+		}
+		if backupEnabled {
+			if err := backup.Save(backupPath, tweet); err != nil {
+				panic(fmt.Sprintf("unable to backup tweet with id %d: %v", tweet.Id, err))
+			}
+		}
+		fmt.Printf("deleting tweet with id: %d and content: %s\n", tweet.Id, tweet.Text)
+		old, err := client.DeleteTweet(tweet)
+		if err != nil {
+			panic(fmt.Sprintf("unable to delete tweet with id %d: %v", tweet.Id, err))
+		}
+		fmt.Printf("deleted tweet with id %d\n", old.Id)
 	}
-}
-
-func mask(s string) string {
-	return strings.Repeat("*", utf8.RuneCountInString(s))
+	return
 }
