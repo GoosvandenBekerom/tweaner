@@ -40,6 +40,9 @@ $ tweaner
 # run tweaner for just 5 tweets
 $ tweaner -n 5
 
+# run tweaner for specific id
+$ tweaner -id 123456789
+
 # run tweaner in dryrun mode (no backups/deletions)
 $ tweaner -d
 
@@ -49,8 +52,10 @@ $ tweaner -b -p "/put/backup/path/here"
 Usage of tweaner:
   -b    enables backup support, when enabled, tweaner creates a backup of the deleted tweets at the path specified with -p
   -d    dryrun, get tweets without deleting them
+  -id int
+        tweet id, when provided the amount given in -n will be ignored
   -n int
-        max amount of tweets to delete (default 1000)
+        max amount of tweets to delete (default 200)
   -p string
         root path for the backup files, required when backups are enabled with -b
 ```

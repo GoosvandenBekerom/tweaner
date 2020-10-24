@@ -21,6 +21,7 @@ The most overkill way to delete the history of a twitter account ™
 
 var (
 	n             int
+	id            int64
 	dryrun        bool
 	backupEnabled bool
 	backupPath    string
@@ -30,6 +31,7 @@ func main() {
 	fmt.Print(banner)
 
 	flag.IntVar(&n, "n", 200, "max amount of tweets to delete")
+	flag.Int64Var(&id, "id", 0, "tweet id, when provided the amount given in -n will be ignored")
 	flag.BoolVar(&dryrun, "d", false, "dryrun, get tweets without deleting them")
 	flag.BoolVar(&backupEnabled, "b", false, "enables backup support, when enabled, tweaner creates a backup of the deleted tweets at the path specified with -p")
 	flag.StringVar(&backupPath, "p", "", "root path for the backup files, required when backups are enabled with -b")
@@ -43,9 +45,20 @@ func main() {
 
 	secrets := twitter.InitSecrets()
 	client := twitter.NewClient(secrets)
-	tweets, err := client.GetTweets(n)
-	if err != nil {
-		panic(fmt.Sprintf("unable to get tweets from authenticated user's timeline: %v", err))
+
+	var tweets []twitter.Tweet
+	if id > 0 {
+		tweet, err := client.GetTweet(id)
+		if err != nil {
+			panic(fmt.Sprintf("unable to get tweet with id %d: %v", id, err))
+		}
+		tweets = append(tweets, tweet)
+	} else {
+		res, err := client.GetTweets(n)
+		if err != nil {
+			panic(fmt.Sprintf("unable to get tweets from authenticated user's timeline: %v", err))
+		}
+		tweets = res
 	}
 
 	for _, tweet := range tweets {

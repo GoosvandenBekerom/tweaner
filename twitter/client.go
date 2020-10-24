@@ -17,6 +17,8 @@ type Tweets []Tweet
 
 // Client can be used to interact with the Twitter API
 type Client interface {
+	// GetTweet returns the tweet with the given id
+	GetTweet(id int64) (Tweet, error)
 	// GetTweets returns tweets of the authenticated user's timeline
 	// 	- parameter 'max' specifies the maximum amount of tweets you want to receive
 	GetTweets(max int) ([]Tweet, error)
@@ -27,6 +29,11 @@ type Client interface {
 
 type client struct {
 	api *anaconda.TwitterApi
+}
+
+func (c *client) GetTweet(id int64) (Tweet, error) {
+	tweet, err := c.api.GetTweet(id, url.Values{})
+	return Tweet{tweet}, err
 }
 
 func (c *client) GetTweets(max int) (result []Tweet, e error) {
