@@ -19,7 +19,28 @@ The most overkill way to delete the history of a twitter account ™
 $ git clone https://github.com/GoosvandenBekerom/tweaner.git
 $ cd tweaner
 $ go install
+$ export TWEANER_CONSUMER_KEY=<your-twitter-consumer-key>
+$ export TWEANER_CONSUMER_SECRET=<your-twitter-consumer-secret>
+$ export TWEANER_ACCESS_TOKEN=<your-twitter-app-access-token>
+$ export TWEANER_ACCESS_TOKEN_SECRET=<your-twitter-app-access-token-secret>
 $ tweaner
+```
+
+## Development
+
+What I do to setup environment variables for local development is create a file called `.env` (which is .gitignore'd):
+
+```
+export TWEANER_CONSUMER_KEY=<your-twitter-consumer-key>
+export TWEANER_CONSUMER_SECRET=<your-twitter-consumer-secret>
+export TWEANER_ACCESS_TOKEN=<your-twitter-app-access-token>
+export TWEANER_ACCESS_TOKEN_SECRET=<your-twitter-app-access-token-secret>
+```
+
+And then run tweaner like this:
+
+```
+$ source .env && go run main.go
 ```
 
 ## Why?
