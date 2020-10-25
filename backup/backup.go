@@ -37,6 +37,7 @@ func Save(rootPath string, tweet twitter.Tweet) error {
 	if err := encoder.Encode(tweet); err != nil {
 		return fmt.Errorf("unable to encode tweet with id %d into file %s: %v", tweet.Id, path, err)
 	}
+	fmt.Printf("saved backup to %s\n", path)
 	return nil
 }
 
@@ -55,7 +56,10 @@ func downloadMedia(rootPath string, tweet twitter.Tweet) error {
 		if err != nil {
 			return fmt.Errorf("unable to generate file path: %v", err)
 		}
-		return downloadFile(info.URL, path)
+		if err = downloadFile(info.URL, path); err != nil {
+			return fmt.Errorf("unable to download image: %v", err)
+		}
+		fmt.Printf("saved twitpic image to %s\n", path)
 	}
 	for i, media := range tweet.Entities.Media {
 		switch media.Type {
@@ -68,8 +72,9 @@ func downloadMedia(rootPath string, tweet twitter.Tweet) error {
 			if err = downloadFile(media.Media_url_https, path); err != nil {
 				return fmt.Errorf("unable to download image: %v", err)
 			}
+			fmt.Printf("saved image to %s\n", path)
 		default:
-			// ignore media type
+			fmt.Printf("ignoring media for tweet with id %d because unsuported type %s\n", tweet.Id, media.Type)
 			continue
 		}
 	}
