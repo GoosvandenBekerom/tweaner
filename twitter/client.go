@@ -12,9 +12,6 @@ type Tweet struct {
 	anaconda.Tweet
 }
 
-// Tweets represents a slice of tweets
-type Tweets []Tweet
-
 // Client can be used to interact with the Twitter API
 type Client interface {
 	// GetTweet returns the tweet with the given id
@@ -32,18 +29,21 @@ type client struct {
 }
 
 func (c *client) GetTweet(id int64) (Tweet, error) {
+	fmt.Printf("attempting to get tweet with id %d\n", id)
 	tweet, err := c.api.GetTweet(id, url.Values{})
 	return Tweet{tweet}, err
 }
 
 func (c *client) GetTweets(max int) (result []Tweet, e error) {
-	tweets, err := c.api.GetUserTimeline(url.Values{
-		"count": []string{fmt.Sprintf("%d", max)},
-	})
+	fmt.Printf("attempting to get up to %d tweets\n", max)
+	v := url.Values{}
+	v.Set("count", fmt.Sprintf("%d", max))
+	tweets, err := c.api.GetUserTimeline(v)
 	if err != nil {
 		e = err
 		return
 	}
+	fmt.Printf("got %d tweets\n", len(tweets))
 	for _, tweet := range tweets {
 		result = append(result, Tweet{tweet})
 	}

@@ -46,37 +46,51 @@ func main() {
 	secrets := twitter.InitSecrets()
 	client := twitter.NewClient(secrets)
 
-	var tweets []twitter.Tweet
 	if id > 0 {
 		tweet, err := client.GetTweet(id)
 		if err != nil {
 			panic(fmt.Sprintf("unable to get tweet with id %d: %v", id, err))
 		}
-		tweets = append(tweets, tweet)
-	} else {
-		res, err := client.GetTweets(n)
+		if err = handle(client, tweet); err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	count := 0
+	for count < n {
+		tweets, err := client.GetTweets(n - count)
 		if err != nil {
 			panic(fmt.Sprintf("unable to get tweets from authenticated user's timeline: %v", err))
 		}
-		tweets = res
+		if len(tweets) == 0 {
+			break
+		}
+		if err = handle(client, tweets...); err != nil {
+			panic(err)
+		}
+		count += len(tweets)
 	}
+	fmt.Println("tweaner out *mic drop*")
+}
 
-	for _, tweet := range tweets {
+func handle(client twitter.Client, tweets ...twitter.Tweet) error {
+	for i, tweet := range tweets {
 		if dryrun {
 			fmt.Printf("[dryrun] got tweet with id: %d and content: %s\n", tweet.Id, tweet.Text)
 			continue
 		}
 		if backupEnabled {
 			if err := backup.Save(backupPath, tweet); err != nil {
-				panic(fmt.Sprintf("unable to backup tweet with id %d: %v", tweet.Id, err))
+				return fmt.Errorf("unable to backup tweet with id %d: %v", tweet.Id, err)
 			}
 		}
-		fmt.Printf("deleting tweet with id: %d and content: %s\n", tweet.Id, tweet.Text)
+		fmt.Printf("%d | deleting tweet with id: %d and content: %s\n", i, tweet.Id, tweet.Text)
 		old, err := client.DeleteTweet(tweet)
 		if err != nil {
-			panic(fmt.Sprintf("unable to delete tweet with id %d: %v", tweet.Id, err))
+			return fmt.Errorf("unable to delete tweet with id %d: %v", tweet.Id, err)
 		}
 		fmt.Printf("deleted tweet with id %d\n", old.Id)
 	}
-	return
+	return nil
 }
