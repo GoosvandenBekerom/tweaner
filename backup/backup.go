@@ -111,5 +111,8 @@ func generateFilePath(root, suffix, ext string, tweet twitter.Tweet) (string, er
 	if err = os.MkdirAll(path, 0666); err != nil {
 		return "", err
 	}
+	if ext[0] == '.' {
+		ext = ext[1:]
+	}
 	return fmt.Sprintf("%s%d%s.%s", path, tweet.Id, suffix, ext), nil
 }
