@@ -28,6 +28,9 @@ $ go install
 
 ## Usage
 
+Make sure you have a [twitter developer account](https://developer.twitter.com/) linked to the account you want to clean up.  
+Add an app to that account, get the following 4 secrets and set them as environment variables.
+
 ```
 $ export TWEANER_CONSUMER_KEY=<your-twitter-consumer-key>
 $ export TWEANER_CONSUMER_SECRET=<your-twitter-consumer-secret>
